@@ -120,6 +120,12 @@ namespace DispatchCPP {
             };
 
         public:
+            // Our initialization function.
+            function<void(void)> initFunc;
+
+            // Our close function.
+            function<void(void)> closeFunc;
+
             // Flags we use for interacting with the thread's execution.
             volatile bool keepGoing;
             volatile bool isRunning;
@@ -135,8 +141,14 @@ namespace DispatchCPP {
             deque<function<void()>> * pWorkQueue;
 
             // Constructor.
-            inline QueueThread(mutex * pNewWorkLock, condition_variable * pNewWorkVar, deque<function<void()>> * pNewWorkQueue) {
+            inline QueueThread(function<void(void)>      newInitFunc,
+                               function<void(void)>      newCloseFunc,
+                               mutex                   * pNewWorkLock,
+                               condition_variable      * pNewWorkVar,
+                               deque<function<void()>> * pNewWorkQueue) {
                 // Initialize our class members.
+                this->initFunc   = newInitFunc;
+                this->closeFunc  = newCloseFunc;
                 this->keepGoing  = true;
                 this->isRunning  = false;
                 this->isIdle     = false;
@@ -156,6 +168,11 @@ namespace DispatchCPP {
 
         private:
             function<void(DispatchCPP::QueueThread *)> queueThreadFunc = [](DispatchCPP::QueueThread * pThis) {
+                // Check if we have a valid init function.
+                if (pThis->initFunc != nullptr) {
+                    pThis->initFunc();
+                }
+
                 // Indicate that we're running, now.
                 pThis->isRunning = true;
 
@@ -201,6 +218,11 @@ namespace DispatchCPP {
 
                     // Indicate that we're idle, now.
                     pThis->isIdle = true;
+                }
+
+                // Check if we have a valid close function.
+                if (pThis->closeFunc != nullptr) {
+                    pThis->closeFunc();
                 }
 
                 // Indicate that we're no longer running, and that we're idle.

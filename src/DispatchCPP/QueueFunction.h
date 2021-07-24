@@ -28,56 +28,42 @@ namespace DispatchCPP {
 
             // =========================================================================================================
 
+            function<void(void)>                            initFunc;
+
             function<bool(Args...)>                         preFunc;
 
             function<typename RValue<RType>::type(Args...)> mainFuncNotVoid;
             function<void(Args...)>                         mainFuncVoid;
 
-            // function<void(typename RValue<RType>::type)>    postFuncNotVoid;
-            // function<void()>                                postFuncVoid;
             void *                                          pPostFuncNotVoid;
             void *                                          pPostFuncVoid;
+
+            function<void(void)>                            closeFunc;
 
             // =========================================================================================================
 
             QueueFunction(function<typename RValue<RType>::type(Args...)> newMainFunc,
                           function<bool(Args...)>                         newPreFunc   = nullptr,
-                          void *                                          pNewPostFunc = nullptr)  {
-
-                // --------------------
-
+                          void *                                          pNewPostFunc = nullptr,
+                          function<void(void)>                            newInitFunc  = nullptr,
+                          function<void(void)>                            newCloseFunc = nullptr) {
                 this->setMainFunc(newMainFunc);
-                // this->mainFuncNotVoid = newMainFuncNotVoid;
-                // this->mainFuncVoid    = nullptr;
-
-                // --------------------
-
                 this->setPreFunc(newPreFunc);
-                // this->preFunc         = newPreFunc;
-
-                // --------------------
-
                 this->setPostFunc(pNewPostFunc);
-                // this->postFuncNotVoid = newPostFunc;
-                // this->postFuncVoid    = nullptr;
-
-                // --------------------
+                this->setInitFunc(newInitFunc);
+                this->setCloseFunc(newCloseFunc);
             };
 
             virtual ~QueueFunction() {
+                this->initFunc         = nullptr;
                 this->mainFuncNotVoid  = nullptr;
                 this->mainFuncVoid     = nullptr;
                 this->preFunc          = nullptr;
                 this->pPostFuncNotVoid = nullptr;
                 this->pPostFuncVoid    = nullptr;
+                this->closeFunc        = nullptr;
             };
 
-            // =========================================================================================================
-/*
-            function<bool(Args...)>                            getPreFunc()  { return(this->preFunc);  };
-            function<typename RValue<RType>::type(Args...)>    getmainFuncNotVoid() { return(this->mainFuncNotVoid); };
-            function<void(bool, typename RValue<RType>::type)> getPostFunc() { return(this->postFuncNotVoid); };
-*/
             // =========================================================================================================
 
             void setPreFunc(function<bool(Args...)> newPreFunc)  {
@@ -108,6 +94,16 @@ namespace DispatchCPP {
                 this->pPostFuncVoid = ((function<void(void)> *) pNewPostFunc);
             };
 
+            // --------------------
+
+            void setInitFunc(function<void(void)> newInitFunc) {
+                this->initFunc = newInitFunc;
+            };
+
+            void setCloseFunc(function<void(void)> newCloseFunc) {
+                this->closeFunc = newCloseFunc;
+            }
+
             // =========================================================================================================
 
             bool runPreFunc(Args... args) {
@@ -127,6 +123,12 @@ namespace DispatchCPP {
             };
 
             // =========================================================================================================
+
+            void runInitFunctions(void) {
+                if (this->initFunc != nullptr) {
+                    this->initFunc();
+                }
+            };
 
             template<typename Q = RType>
             typename enable_if<!is_same<Q, void>::value, void>::type runFunctions(Args... args) {

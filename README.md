@@ -418,3 +418,114 @@ $ ./Main.out
 [4] 8 + 9 = 17
 [3] 6 + 7 = 13
 ```
+
+# Full Example 4 (Thread Init/Close Funcs)
+
+Main.cpp:
+```c++
+#include <stdio.h>
+#include <vector>
+#include <map>
+#include "DispatchCPP/DispatchCPP.h"
+
+using namespace std;
+using namespace DispatchCPP;
+
+int main() {
+    // Let's create our data to dispatch in parallel.
+    int data[5][2] = { 
+        { 0, 1 },
+        { 2, 3 },
+        { 4, 5 },
+        { 6, 7 },
+        { 8, 9 },
+    };  
+
+    // Declare our thread-specific map of data, which gets initialized right after the thread's created.
+    map<pthread_t, vector<int>> * pThreadData = new map<pthread_t, vector<int>>();
+
+    // Construct our parallel Queue to be used for addition.
+    Queue<void, int> * pQueueAdd = new Queue<void, int>(
+        // Create our QueueFunction, capturing the data array and the serial Queue.
+        new QueueFunction<void, int>(
+            [&data, pThreadData](int index) {    // Main function.
+                // Grab our thread ID. 
+                pthread_t tid = pthread_self();
+
+                // Perform the addition, storing each result onto the end of our thread's vector of results.
+                (*pThreadData)[tid].push_back(data[index][0] + data[index][1]);
+            },  
+            nullptr,                             // No pre function (optional, defaults to nullptr).
+            nullptr,                             // No post function (optional, defaults to nullptr).
+            [pThreadData]() {                    // Init function.
+                // Grab our thread ID. 
+                pthread_t tid = pthread_self();
+
+                // Initialize our thread's vector.
+                (*pThreadData)[tid] = vector<int>();
+
+                // Let the user know what's up. 
+                printf("Thread %llu starting...\n", (unsigned long long int) tid);
+            },  
+            []() {                               // Close function.
+                // Grab our thread ID. 
+                pthread_t tid = pthread_self();
+
+                // Let the user know what's up. 
+                printf("Thread %llu stopping...\n", (unsigned long long int) tid);
+            }   
+        ),  
+        4,    // Use 4 threads to dispatch work from this queue.
+        true  // Deallocate the QueueFunction passed into this Queue constructor.
+    );  
+
+    // Dispatch all our work, now, sending in each of the indices to compute.
+    for (unsigned int index = 0; index < 5; ++index) {
+        pQueueAdd->dispatchWork(index);
+    }   
+
+    // Wait for the work to finish, now.
+    pQueueAdd->hasWorkLeft(true);
+
+    // Iterate over all entries in the map.
+    for (auto const& entry : *pThreadData) {
+        // Grab each part of the map.
+        pthread_t   entryThread = entry.first;
+        vector<int> entryVector = entry.second;
+
+        // Print it all out.
+        printf("Thread %llu results =>", (unsigned long long int) entryThread);
+        for (unsigned int index = 0; index < ((unsigned int) entryVector.size()); ++index) {
+            printf(" %d", entryVector[index]);
+        }   
+        printf("\n");
+    }   
+
+    // Clean up after ourselves.
+    delete(pQueueAdd);
+    delete(pThreadData);
+    return(EXIT_SUCCESS);
+}
+```
+
+Make sure you have either [installed](#to-install) or copied the [src/DispatchCPP](https://github.com/L-tgray/DispatchCPP/tree/main/src/DispatchCPP) folder into the same directory as this `Main.cpp` file, and compile it with at least c++11 specified:
+```
+$ g++ -std=c++17 Main.cpp -o Main.out
+```
+
+Possible output:
+```
+$ ./Main.out
+Thread 123145366786048 starting...
+Thread 123145367322624 starting...
+Thread 123145367859200 starting...
+Thread 123145368395776 starting...
+Thread 123145366786048 results => 9
+Thread 123145367322624 results => 17
+Thread 123145367859200 results => 1 13
+Thread 123145368395776 results => 5
+Thread 123145368395776 stopping...
+Thread 123145367322624 stopping...
+Thread 123145366786048 stopping...
+Thread 123145367859200 stopping...
+```

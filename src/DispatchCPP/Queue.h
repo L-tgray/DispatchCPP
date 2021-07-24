@@ -56,7 +56,11 @@ namespace DispatchCPP {
             inline void initializeThreads() {
                 // Create all of our queue thread objects, now.
                 for (unsigned int index = 0; index < this->numThreads; ++index) {
-                    this->allThreads.push_back(new QueueThread(&(this->queueWorkLock), &(this->queueWorkVar), &(this->queueWork)));
+                    this->allThreads.push_back(new QueueThread(this->pQueueFunction->initFunc,
+                                                               this->pQueueFunction->closeFunc,
+                                                               &(this->queueWorkLock),
+                                                               &(this->queueWorkVar),
+                                                               &(this->queueWork)));
                 }
             };
 

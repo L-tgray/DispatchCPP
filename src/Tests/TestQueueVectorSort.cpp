@@ -312,6 +312,14 @@ void testVectorSortingDispatchCPP(unsigned int numVectors, unsigned int vectorSi
             // These default to nullptr, so you could omit these last two arguments to the QueueFunction.
             nullptr, // No pre func
             nullptr  // No post func
+            /* []() {
+                pthread_t tid = pthread_self();
+                printf("Thread started, TID = %llu\n", (unsigned long long int) tid);
+            },
+            []() {
+                pthread_t tid = pthread_self();
+                printf("Thread stopped, TID = %llu\n", (unsigned long long int) tid);
+            } */
         ),
         numThreads,
         true
