@@ -447,8 +447,8 @@ int main() {
                 // Generate a random number, and add it to this thread's vector of rand's.
                 threadData[tid].push_back(rand() % 100);
             },  
-            nullptr,                             // No pre function (optional, defaults to nullptr).
-            nullptr,                             // No post function (optional, defaults to nullptr).
+            nullptr,                             // No pre function (required, in this case, to specify the init/close functions).
+            nullptr,                             // No post function (required, in this case, to specify the init/close functions).
             [&threadData]() {                    // Init function.
                 // Grab our thread ID. 
                 pthread_t tid = pthread_self();
