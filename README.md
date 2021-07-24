@@ -131,6 +131,7 @@ QueueFunction<int, int, int> * pFuncAdd = new QueueFunction<int, int, int>(
 ``` 
 
 # Full Example 1
+In this example, we parallelize the addition of numbers as well as the storing of each result.
 
 Main.cpp:
 ```c++
@@ -203,6 +204,7 @@ $ ./Main.out
 ```
 
 # Full Example 1 (Condensed)
+This example is the same as the one prior, however we inline many things and loop instead of being explicit with arrays.
 
 Main.cpp:
 ```c++
@@ -272,6 +274,7 @@ $ ./Main.out
 ```
 
 # Full Example 2 (Capturing and Using Variables)
+In this example, instead of passing in variables to each dispatch to give the function context, we can simply capture variables with the lambda, itself.
 
 Main.cpp:
 ```c++
@@ -339,6 +342,7 @@ $ ./Main.out
 ```
 
 # Full Example 3 (Serializing Work Done In Parallel)
+In this example, we execute many add instructions in parallel, however we want to serialize the printing each of these results with a serial queue.
 
 Main.cpp:
 ```c++
@@ -421,6 +425,7 @@ $ ./Main.out
 ```
 
 # Full Example 4 (Thread Init/Close Funcs)
+If you need thread-specific objects or data created, there are thread init and thread close functions available to QueueFunctions. These allow you specify a lambda which gets executed at thread init, as well as a lambda that gets executed at thread close.
 
 Main.cpp:
 ```c++
