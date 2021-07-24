@@ -432,37 +432,28 @@ using namespace std;
 using namespace DispatchCPP;
 
 int main() {
-    // Let's create our data to dispatch in parallel.
-    int data[5][2] = { 
-        { 0, 1 },
-        { 2, 3 },
-        { 4, 5 },
-        { 6, 7 },
-        { 8, 9 },
-    };  
-
     // Declare our thread-specific map of data, which gets initialized right after the thread's created.
-    map<pthread_t, vector<int>> * pThreadData = new map<pthread_t, vector<int>>();
+    map<pthread_t, vector<int>> threadData = map<pthread_t, vector<int>>();
 
-    // Construct our parallel Queue to be used for addition.
-    Queue<void, int> * pQueueAdd = new Queue<void, int>(
+    // Construct our parallel Queue to be used for generating arrays of random numbers.
+    Queue<void> * pQueueRand = new Queue<void>(
         // Create our QueueFunction, capturing the data array and the serial Queue.
-        new QueueFunction<void, int>(
-            [&data, pThreadData](int index) {    // Main function.
+        new QueueFunction<void>(
+            [&threadData]() {                    // Main function.
                 // Grab our thread ID. 
                 pthread_t tid = pthread_self();
 
-                // Perform the addition, storing each result onto the end of our thread's vector of results.
-                (*pThreadData)[tid].push_back(data[index][0] + data[index][1]);
+                // Generate a random number, and add it to this thread's vector of rand's.
+                threadData[tid].push_back(rand() % 100);
             },  
             nullptr,                             // No pre function (optional, defaults to nullptr).
             nullptr,                             // No post function (optional, defaults to nullptr).
-            [pThreadData]() {                    // Init function.
+            [&threadData]() {                    // Init function.
                 // Grab our thread ID. 
                 pthread_t tid = pthread_self();
 
                 // Initialize our thread's vector.
-                (*pThreadData)[tid] = vector<int>();
+                threadData[tid] = vector<int>();
 
                 // Let the user know what's up. 
                 printf("Thread %llu starting...\n", (unsigned long long int) tid);
@@ -479,22 +470,22 @@ int main() {
         true  // Deallocate the QueueFunction passed into this Queue constructor.
     );  
 
-    // Dispatch all our work, now, sending in each of the indices to compute.
-    for (unsigned int index = 0; index < 5; ++index) {
-        pQueueAdd->dispatchWork(index);
+    // Dispatch our work, informing the thread pool to generate 50 random numbers across the 4 threads.
+    for (unsigned int index = 0; index < 50; ++index) {
+        pQueueRand->dispatchWork();
     }   
 
     // Wait for the work to finish, now.
-    pQueueAdd->hasWorkLeft(true);
+    pQueueRand->hasWorkLeft(true);
 
     // Iterate over all entries in the map.
-    for (auto const& entry : *pThreadData) {
+    for (auto const& entry : threadData) {
         // Grab each part of the map.
         pthread_t   entryThread = entry.first;
         vector<int> entryVector = entry.second;
 
         // Print it all out.
-        printf("Thread %llu results =>", (unsigned long long int) entryThread);
+        printf("Thread %llu numbers =>", (unsigned long long int) entryThread);
         for (unsigned int index = 0; index < ((unsigned int) entryVector.size()); ++index) {
             printf(" %d", entryVector[index]);
         }   
@@ -502,8 +493,7 @@ int main() {
     }   
 
     // Clean up after ourselves.
-    delete(pQueueAdd);
-    delete(pThreadData);
+    delete(pQueueRand);
     return(EXIT_SUCCESS);
 }
 ```
@@ -516,16 +506,16 @@ $ g++ -std=c++17 Main.cpp -o Main.out
 Possible output:
 ```
 $ ./Main.out
-Thread 123145366786048 starting...
-Thread 123145367322624 starting...
-Thread 123145367859200 starting...
-Thread 123145368395776 starting...
-Thread 123145366786048 results => 9
-Thread 123145367322624 results => 17
-Thread 123145367859200 results => 1 13
-Thread 123145368395776 results => 5
-Thread 123145368395776 stopping...
-Thread 123145367322624 stopping...
-Thread 123145366786048 stopping...
-Thread 123145367859200 stopping...
+Thread 123145504194560 starting...
+Thread 123145504731136 starting...
+Thread 123145505267712 starting...
+Thread 123145505804288 starting...
+Thread 123145504194560 numbers => 7 78 92 16 35 26 79 45 28
+Thread 123145504731136 numbers => 49 73 58 30 72 65 42 3 27 40 12 3 57 33 99 10 33
+Thread 123145505267712 numbers => 23 9 40 87 69 67 49 21 67 93 36 85 91 94
+Thread 123145505804288 numbers => 44 29 9 60 78 97 12 79 72 57
+Thread 123145504194560 stopping...
+Thread 123145505804288 stopping...
+Thread 123145504731136 stopping...
+Thread 123145505267712 stopping...
 ```
