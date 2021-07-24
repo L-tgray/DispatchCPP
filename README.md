@@ -6,6 +6,7 @@ Full, compilable examples at the bottom:
 - [Example 1 - Dispatching Simple Things (Condensed)](#full-example-1-condensed)
 - [Example 2 - Capturing and Using Variables](#full-example-2-capturing-and-using-variables)
 - [Example 3 - Serializing Work Done In Parallel](#full-example-3-serializing-work-done-in-parallel)
+- [Example 4 - Thread Init/Close Funcs](#full-example-4-thread-initclose-funcs)
 
 ## To install:
 1. `$ git clone https://github.com/L-tgray/DispatchCPP.git`
