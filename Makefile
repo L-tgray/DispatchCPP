@@ -26,3 +26,7 @@ install:
 	echo "Installing into $(INSTALL_DIR)..."
 	sudo rm -Rf $(INSTALL_DIR)/DispatchCPP
 	sudo cp -r $(SRC_DIR)/DispatchCPP $(INSTALL_DIR)/
+
+uninstall:
+	echo "Uninstalling from $(INSTALL_DIR)..."
+	sudo rm -Rf $(INSTALL_DIR)/DispatchCPP

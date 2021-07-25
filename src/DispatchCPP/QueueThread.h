@@ -22,6 +22,9 @@
 // This header file uses the standard namespace.
 using namespace std;
 
+// Typedef pthread_t to QueueThreadID
+typedef pthread_t QueueTID;
+
 // Forward declaration of our class within the DispatchCPP namespace.
 namespace DispatchCPP { class QueueThread; };
 
@@ -164,6 +167,11 @@ namespace DispatchCPP {
             inline ~QueueThread() {
                 // Tear down our thread, blocking until it joins back.
                 this->teardownThread();
+            };
+
+            // Return the current thread's ID.
+            static inline QueueTID TID() {
+                return(pthread_self());
             };
 
         private:

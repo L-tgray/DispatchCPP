@@ -439,7 +439,7 @@ using namespace DispatchCPP;
 
 int main() {
     // Declare our thread-specific map of data, which gets initialized right after the thread's created.
-    map<pthread_t, vector<int>> threadData = map<pthread_t, vector<int>>();
+    map<QueueTID, vector<int>> threadData = map<QueueTID, vector<int>>();
 
     // Construct our parallel Queue to be used for generating arrays of random numbers.
     Queue<void> * pQueueRand = new Queue<void>(
@@ -447,16 +447,16 @@ int main() {
         new QueueFunction<void>(
             [&threadData]() {                    // Main function.
                 // Grab our thread ID. 
-                pthread_t tid = pthread_self();
+                QueueTID tid = QueueThread::TID();
 
                 // Generate a random number, and add it to this thread's vector of rand's.
                 threadData[tid].push_back(rand() % 100);
             },  
-            nullptr,                             // No pre function (required, in this case, to specify the init/close functions).
-            nullptr,                             // No post function (required, in this case, to specify the init/close functions).
+            nullptr,                             // No pre function (optional, defaults to nullptr).
+            nullptr,                             // No post function (optional, defaults to nullptr).
             [&threadData]() {                    // Init function.
                 // Grab our thread ID. 
-                pthread_t tid = pthread_self();
+                QueueTID tid = QueueThread::TID();
 
                 // Initialize our thread's vector.
                 threadData[tid] = vector<int>();
@@ -466,7 +466,7 @@ int main() {
             },  
             []() {                               // Close function.
                 // Grab our thread ID. 
-                pthread_t tid = pthread_self();
+                QueueTID tid = QueueThread::TID();
 
                 // Let the user know what's up. 
                 printf("Thread %llu stopping...\n", (unsigned long long int) tid);
@@ -487,7 +487,7 @@ int main() {
     // Iterate over all entries in the map.
     for (auto const& entry : threadData) {
         // Grab each part of the map.
-        pthread_t   entryThread = entry.first;
+        QueueTID    entryThread = entry.first;
         vector<int> entryVector = entry.second;
 
         // Print it all out.
