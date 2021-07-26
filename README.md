@@ -525,3 +525,131 @@ Thread 123145505804288 stopping...
 Thread 123145504731136 stopping...
 Thread 123145505267712 stopping...
 ```
+
+# Full Example 5 (Sorting Vectors in Parallel)
+
+Main.cpp:
+```
+#include <stdio.h>
+#include <algorithm>
+#include <chrono>
+#include <vector>
+#include <map>
+#include "DispatchCPP/DispatchCPP.h"
+
+using namespace std;
+using namespace DispatchCPP;
+
+void initVectors(vector<vector<int>> * pAllVectorsManual,
+                 vector<vector<int>> * pAllVectorsParallel,
+                 unsigned int          numVectors,
+                 unsigned int          vectorSize) {
+    // Initialize all our vectors.
+    for (unsigned int index = 0; index < numVectors; ++index) {
+        // Create our vector for each.
+        vector<int> tempVectorManual   = vector<int>();
+        vector<int> tempVectorParallel = vector<int>();
+
+        // Preallocate space.
+        tempVectorManual.reserve(vectorSize);
+        tempVectorParallel.reserve(vectorSize);
+
+        // For each vector, we insert 1000 numbers.
+        for (unsigned int subIndex = 0; subIndex < vectorSize; ++subIndex) {
+            int randNum = rand();
+            tempVectorManual.push_back(randNum);
+            tempVectorParallel.push_back(randNum);
+        }   
+
+        // Add these vectors to each of their vectors.
+        pAllVectorsManual->push_back(tempVectorManual);
+        pAllVectorsParallel->push_back(tempVectorParallel);
+    }   
+}
+
+void sortVectorsManual(vector<vector<int>> * pAllVectors) {
+    // Iterate over all vectors we've been given.
+    for (unsigned int index = 0; index < ((unsigned int) pAllVectors->size()); ++index) {
+        // Grab the current vector and sort it.
+        vector<int> * pVector = &((*pAllVectors)[index]);
+        sort(pVector->begin(), pVector->end());
+    }   
+}
+
+void sortVectorsParallel(vector<vector<int>> * pAllVectors, unsigned int numThreads) {
+    // Declare our Queue, with our QueueFunction inlined within it.
+    Queue<void, vector<int> *> newQueue = Queue<void, vector<int> *>( 
+        new QueueFunction<void, vector<int> *>( 
+            [](vector<int> * pVector) {
+                // Sort the incoming vector.
+                sort(pVector->begin(), pVector->end());
+            }   
+        ),  
+        numThreads, // Use the number of threads we've been told to use.
+        true        // Deallocate the QueueFunction we passed into this constructor.
+    );  
+
+    // Dispatch all our work, now.
+    for (unsigned int index = 0; index < ((unsigned int) pAllVectors->size()); ++index) {
+        // Grab the current vector and dispatch it to be sorted.
+        vector<int> * pVector = &((*pAllVectors)[index]);
+        newQueue.dispatchWork(pVector);
+    }   
+
+    // Wait for all the sorting to finish.
+    newQueue.hasWorkLeft(true);
+}
+
+int main() {
+    // Unbuffered output.
+    setbuf(stdout, NULL);
+
+    // Declare the number of vectors and vector size to use, as well as number of threads.
+    unsigned int numVectors = 1000;
+    unsigned int vectorSize = 100000;
+    unsigned int numThreads = 4;
+
+    // Declare our vector of vectors.
+    vector<vector<int>> allVectorsManual   = vector<vector<int>>();
+    vector<vector<int>> allVectorsParallel = vector<vector<int>>();
+
+    // Initialize 100 vectors, with each vector having 1000 entries. All vectors
+    // will have the same exact entries in them, in the same exact order.
+    printf("Initializing %u vectors, each with %u entries...", numVectors, vectorSize);
+    initVectors(&allVectorsManual, &allVectorsParallel, numVectors, vectorSize);
+    printf("done!\n");
+
+    // Sort all vectors manually.
+    printf("[MANUAL]   Sorting %u vectors (each w/%u entries) with 1 thread... ", numVectors, vectorSize);
+    auto beforeManual = chrono::high_resolution_clock::now();
+    sortVectorsManual(&allVectorsManual);
+    auto afterManual = chrono::high_resolution_clock::now();
+    double manualMS = ((double) chrono::duration_cast<chrono::microseconds>(afterManual - beforeManual).count()) / 1000.0f;
+    printf("%.2f milliseconds\n", manualMS);
+
+    // Sort all vectors in parallel with 3 threads.
+    printf("[PARALLEL] Sorting %u vectors (each w/%u entries) with %u threads...", numVectors, vectorSize, numThreads);
+    auto beforeParallel = chrono::high_resolution_clock::now();
+    sortVectorsParallel(&allVectorsParallel, numThreads);
+    auto afterParallel = chrono::high_resolution_clock::now();
+    double parallelMS = ((double) chrono::duration_cast<chrono::microseconds>(afterParallel - beforeParallel).count()) / 1000.0f;
+    printf("%.2f milliseconds (%.2fx speedup)\n", parallelMS, manualMS / parallelMS);
+
+    // Clean up after ourselves.
+    return(EXIT_SUCCESS);
+}
+```
+
+Make sure you have either [installed](#to-install) or copied the [src/DispatchCPP](https://github.com/L-tgray/DispatchCPP/tree/main/src/DispatchCPP) folder into the same directory as this `Main.cpp` file, and compile it with at least c++11 specified:
+```
+$ g++ -std=c++17 Main.cpp -o Main.out
+```
+
+Possible output:
+```
+$ ./Main.out
+Initializing 1000 vectors, each with 100000 entries...done!
+[MANUAL]   Sorting 1000 vectors (each w/100000 entries) with 1 thread... 4594.92 milliseconds
+[PARALLEL] Sorting 1000 vectors (each w/100000 entries) with 4 threads...1207.12 milliseconds (3.81x speedup)
+```
+
