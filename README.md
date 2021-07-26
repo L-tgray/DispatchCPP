@@ -620,21 +620,23 @@ int main() {
     initVectors(&allVectorsManual, &allVectorsParallel, numVectors, vectorSize);
     printf("done!\n");
 
-    // Sort all vectors manually.
+    // --- Sort all vectors manually. --------------------------------------------
     printf("[MANUAL]   Sorting %u vectors (each w/%u entries) with 1 thread... ", numVectors, vectorSize);
     auto beforeManual = chrono::high_resolution_clock::now();
     sortVectorsManual(&allVectorsManual);
     auto afterManual = chrono::high_resolution_clock::now();
     double manualMS = ((double) chrono::duration_cast<chrono::microseconds>(afterManual - beforeManual).count()) / 1000.0f;
     printf("%.2f milliseconds\n", manualMS);
+    // ---------------------------------------------------------------------------
 
-    // Sort all vectors in parallel with 3 threads.
+    // --- Sort all vectors in parallel with 3 threads. --------------------------
     printf("[PARALLEL] Sorting %u vectors (each w/%u entries) with %u threads...", numVectors, vectorSize, numThreads);
     auto beforeParallel = chrono::high_resolution_clock::now();
     sortVectorsParallel(&allVectorsParallel, numThreads);
     auto afterParallel = chrono::high_resolution_clock::now();
     double parallelMS = ((double) chrono::duration_cast<chrono::microseconds>(afterParallel - beforeParallel).count()) / 1000.0f;
     printf("%.2f milliseconds (%.2fx speedup)\n", parallelMS, manualMS / parallelMS);
+    // ---------------------------------------------------------------------------
 
     // Clean up after ourselves.
     return(EXIT_SUCCESS);
