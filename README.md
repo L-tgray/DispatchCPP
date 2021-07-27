@@ -1,6 +1,11 @@
 # DispatchCPP
 A header-only library for asynchronously dispatching C++ code both in parallel and serially. This easy-to-use library allows a variable (zero, or more than zero) amount of arguments to your parallel/serial work you dispatch.
 
+**tl;dr**:
+1. Clone this repo,
+2. Run `make install` in it, or simply copy [./src/DispatchCPP]() into your project's includes/headers folder,
+3. Then compile your project with at least c++11.
+
 Full, compilable examples at the bottom:
 - [Example 1 - Dispatching Simple Things](#full-example-1)
 - [Example 1 - Dispatching Simple Things (Condensed)](#full-example-1-condensed)
