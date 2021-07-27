@@ -3,7 +3,7 @@ A header-only library for asynchronously dispatching C++ code both in parallel a
 
 **tl;dr**:
 1. Clone this repo,
-2. Run `make install` in it, or simply copy [./src/DispatchCPP]() into your project's includes/headers folder,
+2. Run `make install` in it, or simply copy [./src/DispatchCPP](https://github.com/L-tgray/DispatchCPP/tree/main/src/DispatchCPP) into your project's includes/headers folder,
 3. Then compile your project with at least c++11.
 
 Full, compilable examples at the bottom:
@@ -90,7 +90,7 @@ If you only specify a single thread for the queue, the queue will be a serial wo
 
 When dispatching work to a queue, your work will be handled by one of the N threads you specified during queue creation, handing off the exact parameters you've passed into the dispatch call, itself.
 
-Simply copy the folder `./src/DispatchCPP` into your headers/include directory, and then include this header-only library with one statement: `#include <DispatchCPP/DispatchCPP.h>`.
+Simply copy the folder [./src/DispatchCPP](https://github.com/L-tgray/DispatchCPP/tree/main/src/DispatchCPP) into your headers/include directory, and then include this header-only library with one statement: `#include <DispatchCPP/DispatchCPP.h>`.
 
 # Pre/Post Queue Functions
 It is possible to specify pre and/or post functions for your QueueFunction. The pre function is ran before your main function, having the same dispatched params passed into it, allowing one to preprocess/filter dispatches. The post function is ran after your main function, having the main function's return value (if it has one) passed into it.
