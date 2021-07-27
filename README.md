@@ -614,8 +614,8 @@ int main() {
     vector<vector<int>> allVectorsManual   = vector<vector<int>>();
     vector<vector<int>> allVectorsParallel = vector<vector<int>>();
 
-    // Initialize 100 vectors, with each vector having 1000 entries. All vectors
-    // will have the same exact entries in them, in the same exact order.
+    // Initialize numVector's number of vectors, with each vector having vectorSize number of
+    // entries. All vectors will have the same exact entries in them, in the same exact order.
     printf("Initializing %u vectors, each with %u entries...", numVectors, vectorSize);
     initVectors(&allVectorsManual, &allVectorsParallel, numVectors, vectorSize);
     printf("done!\n");
@@ -629,7 +629,7 @@ int main() {
     printf("%.2f milliseconds\n", manualMS);
     // ---------------------------------------------------------------------------
 
-    // --- Sort all vectors in parallel with 3 threads. --------------------------
+    // --- Sort all vectors in parallel with numThreads' worth of  threads. ------
     printf("[PARALLEL] Sorting %u vectors (each w/%u entries) with %u threads...", numVectors, vectorSize, numThreads);
     auto beforeParallel = chrono::high_resolution_clock::now();
     sortVectorsParallel(&allVectorsParallel, numThreads);
