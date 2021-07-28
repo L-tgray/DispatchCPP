@@ -756,7 +756,8 @@ Possible output:
 ```
 $ ./Main.out
 Initializing 1000 vectors, each with 100000 entries...done!
-[MANUAL]   Sorting 1000 vectors (each w/100000 entries) with 1 thread... 4594.92 milliseconds
-[PARALLEL] Sorting 1000 vectors (each w/100000 entries) with 4 threads...1207.12 milliseconds (3.81x speedup)
+[MANUAL]      Sorting 1000 vectors (each w/100000 entries) with 1 thread... 4610.80 milliseconds
+[DispatchCPP] Sorting 1000 vectors (each w/100000 entries) with 4 threads...1216.40 milliseconds (3.79x speedup)
+[pthreads]    Sorting 1000 vectors (each w/100000 entries) with 4 threads...1210.09 milliseconds (3.81x speedup)
 ```
 
