@@ -12,7 +12,7 @@ Full, compilable examples at the bottom:
 - [Example 2 - Capturing and Using Variables](#full-example-2-capturing-and-using-variables)
 - [Example 3 - Serializing Work Done In Parallel](#full-example-3-serializing-work-done-in-parallel)
 - [Example 4 - Thread Init/Close Funcs](#full-example-4-thread-initclose-funcs)
-- [Example 5 - Sorting N Vectors in Parallel (Manual vs DispatchCPP vs pthreads)](#full-example-5-sorting-n-vectors-manual-vs-dispachcpp-vs-pthreads)
+- [Example 5 - Sorting N Vectors in Parallel (Manual vs DispatchCPP vs Pure PThreads)](#full-example-5-sorting-n-vectors-manual-vs-dispachcpp-vs-pure-pthreads)
 
 ## To install:
 1. `$ git clone https://github.com/L-tgray/DispatchCPP.git`
@@ -532,7 +532,7 @@ Thread 123145504731136 stopping...
 Thread 123145505267712 stopping...
 ```
 
-# Full Example 5 (Sorting N Vectors: Manual vs DispachCPP vs pthreads)
+# Full Example 5 (Sorting N Vectors: Manual vs DispachCPP vs Pure PThreads)
 
 Main.cpp:
 ```c++
