@@ -12,7 +12,7 @@ Full, compilable examples at the bottom:
 - [Example 2 - Capturing and Using Variables](#full-example-2-capturing-and-using-variables)
 - [Example 3 - Serializing Work Done In Parallel](#full-example-3-serializing-work-done-in-parallel)
 - [Example 4 - Thread Init/Close Funcs](#full-example-4-thread-initclose-funcs)
-- [Example 5 - Sorting N Vectors in Parallel](#full-example-5-sorting-n-vectors-in-parallel)
+- [Example 5 - Sorting N Vectors in Parallel (Manual vs DispatchCPP vs pthreads)](#full-example-5-sorting-n-vectors-manual-vs-dispachcpp-vs-pthreads)
 
 ## To install:
 1. `$ git clone https://github.com/L-tgray/DispatchCPP.git`
@@ -532,13 +532,14 @@ Thread 123145504731136 stopping...
 Thread 123145505267712 stopping...
 ```
 
-# Full Example 5 (Sorting N Vectors in Parallel)
+# Full Example 5 (Sorting N Vectors: Manual vs DispachCPP vs pthreads)
 
 Main.cpp:
 ```c++
 #include <stdio.h>
 #include <algorithm>
 #include <chrono>
+#include <queue>
 #include <vector>
 #include <map>
 #include "DispatchCPP/DispatchCPP.h"
@@ -548,6 +549,7 @@ using namespace DispatchCPP;
 
 void initVectors(vector<vector<int>> * pAllVectorsManual,
                  vector<vector<int>> * pAllVectorsParallel,
+                 vector<vector<int>> * pAllVectorsPThreads,
                  unsigned int          numVectors,
                  unsigned int          vectorSize) {
     // Initialize all our vectors.
@@ -555,21 +557,25 @@ void initVectors(vector<vector<int>> * pAllVectorsManual,
         // Create our vector for each.
         vector<int> tempVectorManual   = vector<int>();
         vector<int> tempVectorParallel = vector<int>();
+        vector<int> tempVectorPThreads = vector<int>();
 
         // Preallocate space.
         tempVectorManual.reserve(vectorSize);
         tempVectorParallel.reserve(vectorSize);
+        tempVectorPThreads.reserve(vectorSize);
 
         // For each vector, we insert 1000 numbers.
         for (unsigned int subIndex = 0; subIndex < vectorSize; ++subIndex) {
             int randNum = rand();
             tempVectorManual.push_back(randNum);
             tempVectorParallel.push_back(randNum);
+            tempVectorPThreads.push_back(randNum);
         }   
 
         // Add these vectors to each of their vectors.
         pAllVectorsManual->push_back(tempVectorManual);
         pAllVectorsParallel->push_back(tempVectorParallel);
+        pAllVectorsPThreads->push_back(tempVectorPThreads);
     }   
 }
 
@@ -606,6 +612,90 @@ void sortVectorsParallel(vector<vector<int>> * pAllVectors, unsigned int numThre
     newQueue.hasWorkLeft(true);
 }
 
+// Declare our structure for each thread to use.
+typedef struct __THREAD_STRUCT__ {
+    pthread_mutex_t      * pWorkMutex;
+    queue<vector<int> *> * pWork;
+    volatile bool          shouldQuit;
+} threadStruct, * pThreadStruct;
+
+void * sortVectorsPThreads_Func(void * pContext) {
+    // Cast ourselves a pointer to a thread object.
+    pThreadStruct pSelf = ((pThreadStruct) pContext);
+
+    // Iterate until we're told to stop.
+    while (!(pSelf->shouldQuit)) {
+        // Grab the lock, and fetch our work to be dispatched.
+        pthread_mutex_lock(pSelf->pWorkMutex);
+        vector<int> * pNewWork = ((vector<int> *) NULL);
+        if (pSelf->pWork->size() > 0) {
+            pNewWork = pSelf->pWork->front();
+            pSelf->pWork->pop();
+        }
+        pthread_mutex_unlock(pSelf->pWorkMutex);
+
+        // Sort this vector, now.
+        sort(pNewWork->begin(), pNewWork->end());
+    }
+
+    // Always return NULL.
+    return((void *) NULL);
+}
+
+void sortVectorsPThreads(vector<vector<int>> * pAllVectors, unsigned int numThreads) {
+    // Initialize our thread variables to be used.
+    pthread_mutex_t      threadMutex;
+    queue<vector<int> *> threadWork = queue<vector<int> *>();
+
+    // Initialize our thread info structure.
+    threadStruct threadInfo = {
+        &threadMutex,
+        &threadWork,
+        false
+    };
+
+    // Grab the lock on the mutex before creating the threads, halting them until we dipatch work.
+    pthread_mutex_lock(&threadMutex);
+
+    // Create our threads, now.
+    pthread_t * pAllThreads = (pthread_t *) calloc(numThreads, sizeof(pthread_t));
+    for (unsigned int index = 0; index < numThreads; ++index) {
+        pthread_create(&(pAllThreads[index]), NULL, sortVectorsPThreads_Func, (void *) &threadInfo);
+    }
+
+    // Dispatch all our work, now.
+    for (unsigned int index = 0; index < ((unsigned int) pAllVectors->size()); ++index) {
+        threadWork.push(&((*pAllVectors)[index]));
+    }
+
+    // Let go of the lock on the mutex, letting all of the threads take off.
+    pthread_mutex_unlock(&threadMutex);
+
+    // Monitor until all work has been dispatched.
+    while (true) {
+        // Give up the CPU for a bit.
+        usleep(5);
+
+        // Determine if we have any work left.
+        bool allWorkDispatched = false;
+        pthread_mutex_lock(&threadMutex);
+        allWorkDispatched = (threadWork.size() == 0);
+        pthread_mutex_unlock(&threadMutex);
+
+        // Have we dispatched all work yet?
+        if (allWorkDispatched) {
+            threadInfo.shouldQuit = true;
+            break;
+        }
+    }
+
+    // Join back each thread, now.
+    for (unsigned int index = 0; index < numThreads; ++index) {
+        pthread_t * pCurrentThread = &(pAllThreads[index]);
+        pthread_join(*pCurrentThread, NULL);
+    }
+}
+
 int main() {
     // Unbuffered output.
     setbuf(stdout, NULL);
@@ -618,15 +708,16 @@ int main() {
     // Declare our vector of vectors.
     vector<vector<int>> allVectorsManual   = vector<vector<int>>();
     vector<vector<int>> allVectorsParallel = vector<vector<int>>();
+    vector<vector<int>> allVectorsPThreads = vector<vector<int>>();
 
     // Initialize numVector's number of vectors, with each vector having vectorSize number of
     // entries. All vectors will have the same exact entries in them, in the same exact order.
     printf("Initializing %u vectors, each with %u entries...", numVectors, vectorSize);
-    initVectors(&allVectorsManual, &allVectorsParallel, numVectors, vectorSize);
+    initVectors(&allVectorsManual, &allVectorsParallel, &allVectorsPThreads, numVectors, vectorSize);
     printf("done!\n");
 
     // --- Sort all vectors manually. --------------------------------------------
-    printf("[MANUAL]   Sorting %u vectors (each w/%u entries) with 1 thread... ", numVectors, vectorSize);
+    printf("[MANUAL]      Sorting %u vectors (each w/%u entries) with 1 thread... ", numVectors, vectorSize);
     auto beforeManual = chrono::high_resolution_clock::now();
     sortVectorsManual(&allVectorsManual);
     auto afterManual = chrono::high_resolution_clock::now();
@@ -635,7 +726,7 @@ int main() {
     // ---------------------------------------------------------------------------
 
     // --- Sort all vectors in parallel with numThreads' worth of  threads. ------
-    printf("[PARALLEL] Sorting %u vectors (each w/%u entries) with %u threads...", numVectors, vectorSize, numThreads);
+    printf("[DispatchCPP] Sorting %u vectors (each w/%u entries) with %u threads...", numVectors, vectorSize, numThreads);
     auto beforeParallel = chrono::high_resolution_clock::now();
     sortVectorsParallel(&allVectorsParallel, numThreads);
     auto afterParallel = chrono::high_resolution_clock::now();
@@ -643,6 +734,14 @@ int main() {
     printf("%.2f milliseconds (%.2fx speedup)\n", parallelMS, manualMS / parallelMS);
     // ---------------------------------------------------------------------------
 
+    // --- Sort all vectors in parallel with pthreads, using numThreads' threads -
+    printf("[pthreads]    Sorting %u vectors (each w/%u entries) with %u threads...", numVectors, vectorSize, numThreads);
+    auto beforePThread = chrono::high_resolution_clock::now();
+    sortVectorsPThreads(&allVectorsPThreads, numThreads);
+    auto afterPThread = chrono::high_resolution_clock::now();
+    double pthreadMS = ((double) chrono::duration_cast<chrono::microseconds>(afterPThread - beforePThread).count()) / 1000.0f;
+    printf("%.2f milliseconds (%.2fx speedup)\n", pthreadMS, manualMS / pthreadMS);
+    // ---------------------------------------------------------------------------
     // Clean up after ourselves.
     return(EXIT_SUCCESS);
 }
