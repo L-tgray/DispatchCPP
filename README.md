@@ -754,8 +754,7 @@ $ g++ -std=c++17 Main.cpp -o Main.out
 Possible output:
 ```
 $ ./Main.out
-[MANUAL]      Sorting 1000 vectors (each w/100000 entries) with 1 thread... 4615.01 milliseconds
-[DispatchCPP] Sorting 1000 vectors (each w/100000 entries) with 4 threads...1211.74 milliseconds (3.81x speedup)
-[pthreads]    Sorting 1000 vectors (each w/100000 entries) with 4 threads...1215.61 milliseconds (3.80x speedup)
+[MANUAL]      Sorting 1000 vectors (each w/100000 entries) with 1 thread... 4604.19 milliseconds
+[DispatchCPP] Sorting 1000 vectors (each w/100000 entries) with 4 threads...1219.81 milliseconds (3.77x speedup)
+[pthreads]    Sorting 1000 vectors (each w/100000 entries) with 4 threads...1217.23 milliseconds (3.78x speedup)
 ```
-
