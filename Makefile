@@ -8,7 +8,7 @@ TEST_FILES  := $(wildcard $(SRC_DIR)/Tests/*.cpp)
 OBJ_FILES   := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES)) $(patsubst $(SRC_DIR)/Tests/%.cpp,$(OBJ_DIR)/Tests/%.o,$(TEST_FILES))
 LDFLAGS     := -O3 -g -pthread
 CPPFLAGS    := -O3 -g
-CXXFLAGS    := -std=c++17 -W -Wall -Wno-unused-parameter
+CXXFLAGS    := -std=c++17 -W -Wall -Wno-unused-parameter -I$(SRC_DIR)
 
 # Now actually define all our targets.
 $(BIN_DIR)/Main.out: $(OBJ_FILES)
