@@ -12,6 +12,8 @@ int main(int numArgs, char ** ppArgs) {
 	bool testVectorSort = false;
 	bool testDownloads  = false;
 	bool testFileIO     = false;
+	bool testMalloc     = false;
+	bool testThreads    = false;
 
 	// Iterate over all the incoming arguments.
 	for (int argIndex = 1; argIndex < numArgs; ++argIndex) {
@@ -25,6 +27,10 @@ int main(int numArgs, char ** ppArgs) {
 			testDownloads = true;
 		} else if ((currentArg == "-tf"s) || (currentArg == "--test-files"s)) {
 			testFileIO = true;
+		} else if ((currentArg == "-tm"s) || (currentArg == "--test-malloc"s)) {
+			testMalloc = true;
+		} else if ((currentArg == "-tt"s) || (currentArg == "--test-threads"s)) {
+			testThreads = true;
 		}
 	}
 
@@ -37,6 +43,12 @@ int main(int numArgs, char ** ppArgs) {
 	}
 	if (testFileIO) {
 		testQueueFileIO(12);
+	}
+	if (testMalloc) {
+		testQueueMalloc(12);
+	}
+	if (testThreads) {
+		testQueueThreads(16);
 	}
 
 /*

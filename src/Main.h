@@ -10,6 +10,8 @@
 #include "Tests/TestQueueVectorSort.h"
 #include "Tests/TestQueueDownloads.h"
 #include "Tests/TestQueueFileIO.h"
+#include "Tests/TestMalloc.h"
+#include "Tests/TestThreads.h"
 
 // Forward declaration of our application's entry point.
 int main(int numArgs, char ** ppArgs);
