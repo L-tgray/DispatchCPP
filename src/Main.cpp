@@ -3,6 +3,9 @@ using namespace std;
 using namespace std::string_literals;
 using namespace DispatchCPP;
 
+// Default number of threads to use for each test.
+#define DEFAULT_NUM_THREADS 10
+
 // Entry point of our application.
 int main(int numArgs, char ** ppArgs) {
 	// Don't buffer stdout.
@@ -36,19 +39,19 @@ int main(int numArgs, char ** ppArgs) {
 
 	// Call into each test we should perform.
 	if (testVectorSort) {
-		testQueueVectorSort(14);
+		testQueueVectorSort(DEFAULT_NUM_THREADS);
 	}
 	if (testDownloads) {
-		testQueueDownloads(12);
+		testQueueDownloads(DEFAULT_NUM_THREADS);
 	}
 	if (testFileIO) {
-		testQueueFileIO(12);
+		testQueueFileIO(DEFAULT_NUM_THREADS);
 	}
 	if (testMalloc) {
-		testQueueMalloc(12);
+		testQueueMalloc(DEFAULT_NUM_THREADS);
 	}
 	if (testThreads) {
-		testQueueThreads(16);
+		testQueueThreads(DEFAULT_NUM_THREADS);
 	}
 
 /*
