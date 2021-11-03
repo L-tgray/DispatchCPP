@@ -693,6 +693,7 @@ void sortVectorsPThreads(vector<vector<int>> * pAllVectors, unsigned int numThre
         pthread_t * pCurrentThread = &(pAllThreads[index]);
         pthread_join(*pCurrentThread, NULL);
     }
+    free(pAllThreads);
 }
 
 int main() {
