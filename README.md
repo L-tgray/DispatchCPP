@@ -634,7 +634,13 @@ void * sortVectorsPThreads_Func(void * pContext) {
         pthread_mutex_unlock(pSelf->pWorkMutex);
 
         // Sort this vector, now.
-        sort(pNewWork->begin(), pNewWork->end());
+        if (pNewWork) {
+            sort(pNewWork->begin(), pNewWork->end());
+
+        // Otherwise just wait until we have to exit.
+        } else {
+            usleep(5);
+        }
     }
 
     // Always return NULL.
