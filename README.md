@@ -651,6 +651,9 @@ void sortVectorsPThreads(vector<vector<int>> * pAllVectors, unsigned int numThre
     // Initialize our thread variables to be used.
     pthread_mutex_t      threadMutex;
     queue<vector<int> *> threadWork = queue<vector<int> *>();
+    
+    // Initialize the mutex.
+    pthread_mutex_init(&threadMutex, NULL);
 
     // Initialize our thread info structure.
     threadStruct threadInfo = {
@@ -699,6 +702,7 @@ void sortVectorsPThreads(vector<vector<int>> * pAllVectors, unsigned int numThre
         pthread_t * pCurrentThread = &(pAllThreads[index]);
         pthread_join(*pCurrentThread, NULL);
     }
+    pthread_mutex_destroy(&threadMutex);
     free(pAllThreads);
 }
 
