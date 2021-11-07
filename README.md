@@ -196,7 +196,7 @@ int main() {
 
 Make sure you have either [installed](#to-install) or copied the [src/DispatchCPP](https://github.com/L-tgray/DispatchCPP/tree/main/src/DispatchCPP) folder into the same directory as this `Main.cpp` file, and compile it with at least c++11 specified:
 ```
-$ g++ -std=c++17 Main.cpp -o Main.out
+$ g++ -std=c++17 Main.cpp -o Main.out -lpthread
 ```
 
 Output:
@@ -266,7 +266,7 @@ int main() {
 
 Make sure you have either [installed](#to-install) or copied the [src/DispatchCPP](https://github.com/L-tgray/DispatchCPP/tree/main/src/DispatchCPP) folder into the same directory as this `Main.cpp` file, and compile it with at least c++11 specified:
 ```
-$ g++ -std=c++17 Main.cpp -o Main.out
+$ g++ -std=c++17 Main.cpp -o Main.out -lpthread
 ```
 
 Output:
@@ -334,7 +334,7 @@ int main() {
 
 Make sure you have either [installed](#to-install) or copied the [src/DispatchCPP](https://github.com/L-tgray/DispatchCPP/tree/main/src/DispatchCPP) folder into the same directory as this `Main.cpp` file, and compile it with at least c++11 specified:
 ```
-$ g++ -std=c++17 Main.cpp -o Main.out
+$ g++ -std=c++17 Main.cpp -o Main.out -lpthread
 ```
 
 Output:
@@ -417,7 +417,7 @@ int main() {
 
 Make sure you have either [installed](#to-install) or copied the [src/DispatchCPP](https://github.com/L-tgray/DispatchCPP/tree/main/src/DispatchCPP) folder into the same directory as this `Main.cpp` file, and compile it with at least c++11 specified:
 ```
-$ g++ -std=c++17 Main.cpp -o Main.out
+$ g++ -std=c++17 Main.cpp -o Main.out -lpthread
 ```
 
 Possible output:
@@ -512,7 +512,7 @@ int main() {
 
 Make sure you have either [installed](#to-install) or copied the [src/DispatchCPP](https://github.com/L-tgray/DispatchCPP/tree/main/src/DispatchCPP) folder into the same directory as this `Main.cpp` file, and compile it with at least c++11 specified:
 ```
-$ g++ -std=c++17 Main.cpp -o Main.out
+$ g++ -std=c++17 Main.cpp -o Main.out -lpthread
 ```
 
 Possible output:
@@ -759,7 +759,7 @@ int main() {
 
 Make sure you have either [installed](#to-install) or copied the [src/DispatchCPP](https://github.com/L-tgray/DispatchCPP/tree/main/src/DispatchCPP) folder into the same directory as this `Main.cpp` file, and compile it with at least c++11 specified:
 ```
-$ g++ -std=c++17 Main.cpp -o Main.out
+$ g++ -std=c++17 Main.cpp -o Main.out -lpthread
 ```
 
 Possible output:
