@@ -589,7 +589,7 @@ void sortVectorsManual(vector<vector<int>> * pAllVectors) {
 
 void sortVectorsParallel(vector<vector<int>> * pAllVectors, unsigned int numThreads) {
     // Declare our Queue, with our QueueFunction inlined within it.
-    Queue<void, vector<int> *> newQueue = Queue<void, vector<int> *>( 
+    Queue<void, vector<int> *> newQueue( 
         new QueueFunction<void, vector<int> *>( 
             [](vector<int> * pVector) {
                 // Sort the incoming vector.
