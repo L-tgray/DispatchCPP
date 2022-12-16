@@ -4,90 +4,43 @@ using namespace std::string_literals;
 using namespace DispatchCPP;
 
 // Default number of threads to use for each test.
-#define DEFAULT_NUM_THREADS 10
+#define DEFAULT_NUM_THREADS 12
 
 // Entry point of our application.
 int main(int numArgs, char ** ppArgs) {
 	// Don't buffer stdout.
 	setbuf(stdout, NULL);
 
-	// Flags for what we should test.
-	bool testVectorSort = false;
-	bool testDownloads  = false;
-	bool testFileIO     = false;
-	bool testMalloc     = false;
-	bool testThreads    = false;
+	// The number of threads to use.
+	unsigned int targetNumThreads = DEFAULT_NUM_THREADS;
 
-	// Iterate over all the incoming arguments.
-	for (int argIndex = 1; argIndex < numArgs; ++argIndex) {
-		// Convert the argument into a string.
-		string currentArg(ppArgs[argIndex]);
+	// Parse all our args, now.
+	parseArgs(numArgs, ppArgs);
 
-		// Parse the incoming arg, now.
-		if ((currentArg == "-tv"s) || (currentArg == "--test-vectors"s)) {
-			testVectorSort = true;
-		} else if ((currentArg == "-td"s) || (currentArg == "--test-downloads"s)) {
-			testDownloads = true;
-		} else if ((currentArg == "-tf"s) || (currentArg == "--test-files"s)) {
-			testFileIO = true;
-		} else if ((currentArg == "-tm"s) || (currentArg == "--test-malloc"s)) {
-			testMalloc = true;
-		} else if ((currentArg == "-tt"s) || (currentArg == "--test-threads"s)) {
-			testThreads = true;
-		}
+	// Determine what kind of test(s) to perform.
+	bool testVectorSort = (argExists("tv"s) || argExists("test-vectors"s));
+	bool testDownloads  = (argExists("td"s) || argExists("test-downloads"s));
+	bool testFileIO     = (argExists("tf"s) || argExists("test-files"s));
+	bool testMalloc     = (argExists("tm"s) || argExists("test-malloc"s));
+	bool testThreads    = (argExists("tt"s) || argExists("test-threads"s));
+
+	// Did the user specify a custom number of threads to use?
+	auto testNumThreadsArg = pair<bool, size_t>(false, 0);
+	if (argValueExists("j"s)) {
+		testNumThreadsArg = getArgValueUInt("j"s);
+	} else if (argValueExists("num-threads"s)) {
+		testNumThreadsArg = getArgValueUInt("num-threads"s);
+	}
+	if (testNumThreadsArg.first && (testNumThreadsArg.second > 0)) {
+		targetNumThreads = ((unsigned int) testNumThreadsArg.second);
 	}
 
 	// Call into each test we should perform.
-	if (testVectorSort) {
-		testQueueVectorSort(DEFAULT_NUM_THREADS);
-	}
-	if (testDownloads) {
-		testQueueDownloads(DEFAULT_NUM_THREADS);
-	}
-	if (testFileIO) {
-		testQueueFileIO(DEFAULT_NUM_THREADS);
-	}
-	if (testMalloc) {
-		testQueueMalloc(DEFAULT_NUM_THREADS);
-	}
-	if (testThreads) {
-		testQueueThreads(DEFAULT_NUM_THREADS);
-	}
-
-/*
-	// Create our post-test function.
-	function<void()> testQueuePostFunc = []() {
-		printf("OMG Thanks!\n");
-	};
-
-	// Create a test function.
-	QueueFunction<void> * pTestQueueFunction = new QueueFunction<void>(
-		[]() {
-			printf("Hello, world %s!\n", (rand() % 2) ? "TRUE" : "FALSE");
-		},
-		nullptr,
-		&testQueuePostFunc
-	);
-
-	// Try calling the test function of our QueueFunction object.
-	printf("Test function has return value = %s\n", pTestQueueFunction->hasReturnValue() ? "TRUE" : "FALSE");
-
-	// Create our test queue.
-	Queue<void> testQueue(pTestQueueFunction, 2, true);
-
-	testQueue.dispatchWork();
-	testQueue.dispatchWork();
-	testQueue.dispatchWork();
-	testQueue.dispatchWork();
-	testQueue.dispatchWork();
-	testQueue.dispatchWork();
-	testQueue.dispatchWork();
-	testQueue.dispatchWork();
-	testQueue.dispatchWork();
-	testQueue.dispatchWork();
-
-	testQueue.hasWorkLeft(true);
-*/
+	if (testVectorSort) { testQueueVectorSort(targetNumThreads); }
+	if (testDownloads)  { testQueueDownloads(targetNumThreads);  }
+	if (testFileIO)     { testQueueFileIO(targetNumThreads);     }
+	if (testMalloc)     { testQueueMalloc(targetNumThreads);     }
+	if (testThreads)    { testQueueThreads(targetNumThreads);    }
 
 	return(EXIT_SUCCESS);
 }
