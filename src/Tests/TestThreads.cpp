@@ -127,11 +127,11 @@ double testQueueMathThreads(unsigned int numThreads, unsigned int numArrays, uns
 
 void testQueueThreads(unsigned int maxNumThreads) {
 	// The number of times to average each run.
-	unsigned int numTimesToAverage = 5;
+	unsigned int numTimesToAverage = 3;
 
 	// Declare the initial number of arrays and entries.
-	unsigned int initNumArrays  = 16;
-	unsigned int initNumEntries = 10;
+	unsigned int initNumArrays  = 32;
+	unsigned int initNumEntries = 100;
 
 	// Declare how much we multiply the number of entries each iteration.
 	unsigned int multNumArrays  = 2;
@@ -144,6 +144,9 @@ void testQueueThreads(unsigned int maxNumThreads) {
 	// Iterate over all the number of arrays we should use.
 	for (unsigned int numArrays = initNumArrays; numArrays <= maxNumArrays; numArrays *= multNumArrays) {
 		printf("========================================================================================\n");
+		if (numArrays == initNumArrays) {
+			printf("===                    All tests are averaged over %u run(s)                          ===\n", numTimesToAverage);
+		}
 		printf("========================================================================================\n");
 		// Iterate over all the number of entries we should use.
 		for (unsigned int numEntries = initNumEntries; numEntries <= maxNumEntries; numEntries *= multNumEntries) {
@@ -169,7 +172,7 @@ void testQueueThreads(unsigned int maxNumThreads) {
 					threadRunTotal += testQueueMathThreads(numThreads, numArrays, numEntries);
 				}
 				double threadRunAvg = threadRunTotal / ((double) numTimesToAverage);
-				printf("%10.3f mS, %s%.2fx speedup%s\n",
+				printf("%10.3f mS, %s%.3fx speedup%s\n",
 					threadRunAvg / 1000.0f,
 					((threadRunAvg < manualRunAvg) ? Colors::pColorGreen : Colors::pColorRed),
 					manualRunAvg / threadRunAvg,
